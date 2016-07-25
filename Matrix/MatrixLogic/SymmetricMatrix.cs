@@ -10,7 +10,7 @@ namespace MatrixLogic
    /// Symmetric Matrix class
    /// </summary>
    /// <typeparam name="T"></typeparam>
-   class SymmetricMatrix<T>:SquareMatrix<T>
+   class SymmetricMatrix<T>: Matrix<T>
    {
       private T[,] storage;
 
@@ -25,6 +25,17 @@ namespace MatrixLogic
                storage[j, i] = array[i, j];
             }
          }
+      }
+
+      public override T GetValue(int i, int j)
+      {
+         if ((i - j) <= 0) return storage[i, j];
+         return storage[j, i];
+      }
+
+      public override void SetValue(int i, int j, T value)
+      {
+         if ((i - j) <= 0) storage[i, j] = value;
       }
    }
 }

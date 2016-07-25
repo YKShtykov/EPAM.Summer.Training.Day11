@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.CSharp.RuntimeBinder;
+using System;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,22 +10,35 @@ namespace MatrixLogic
    /// Diagonal matrix class
    /// </summary>
    /// <typeparam name="T"></typeparam>
-   class DiagonalMatrix<T> : SquareMatrix<T>
+   class DiagonalMatrix<T> : Matrix<T>
    {
       private T[] storage;
 
-      public DiagonalMatrix(int Range)
+      public static Func<T, T, T> Adder;
+
+      public DiagonalMatrix(int size)
       {
-         this.Range = Range;
-         storage = new T[Range];
+         Size = size;
+         storage = new T[size];
       }
 
       public DiagonalMatrix(T[] array) : this(array.Length)
       {
-         for (int i = 0; i < Range; i++)
+         for (int i = 0; i < Size; i++)
          {
             storage[i] = array[i];
          }
+      }
+
+      public override T GetValue(int i, int j)
+      {
+         if (i == j) return storage[i];
+         return default(T);
+      }
+
+      public override void SetValue(int i, int j, T value)
+      {
+         if (i == j) storage[i] = value;
       }
 
       /// <summary>
@@ -32,61 +46,27 @@ namespace MatrixLogic
       /// </summary>
       /// <param name="lhs"></param>
       /// <param name="rhs"></param>
-      /// <returns>new square matrix, each element of it is result of addinf operation</returns>
-      public static DiagonalMatrix<T> operator +(DiagonalMatrix<T> lhs, DiagonalMatrix<T> rhs)
+      /// <returns>new Diagonal matrix, each element of it is result of addinf operation</returns>
+      public static DiagonalMatrix<T> Add(DiagonalMatrix<T> lhs, DiagonalMatrix<T> rhs)
       {
-         DiagonalMatrix<T> result = new DiagonalMatrix<T>(lhs.Range);
-         for (int i = 0; i < lhs.Range; i++)
+         if (ReferenceEquals(Adder, null)) Adder = (a, b) => (dynamic)a + b;
+         try
          {
-            result[i] = Adder(lhs[i], rhs[i]);
-         }
-
-         return result;
-      }
-
-      public override  T this[int i, int j]
-      {
-         get
-         {
-            if (i >= 0 && i < Range && j >= 0 && j < Range)
+            DiagonalMatrix<T> result = new DiagonalMatrix<T>(lhs.Size);
+            for (int i = 0; i < lhs.Size; i++)
             {
-               if (i == j) return storage[i];
-               else return default(T);
-            }
-            throw new ArgumentException();
-         }
+               result[i,i] = Adder(lhs[i,i], rhs[i,i]);
 
-         set
-         {
-            if (i >= 0 && i < Range && i==j)
-            {
-               storage[i] = value;
-               OnChanged(new ElementEventArgs(i, j));         
             }
-            throw new ArgumentException();
+
+            return result;
+         }
+         catch (RuntimeBinderException e)
+         {
+            throw new InvalidOperationException();
          }
       }
 
-      public T this[int i]
-      {
-         get
-         {
-            if (i > 0 && i < Range)
-            {
-               return storage[i];
-            }
-            throw new ArgumentException();
-         }
 
-         set
-         {
-            if (i > 0 && i < Range)
-            {
-               storage[i] = value;
-               OnChanged(new ElementEventArgs(i, i));
-            }
-            throw new ArgumentException();
-         }
-      }
    }
 }

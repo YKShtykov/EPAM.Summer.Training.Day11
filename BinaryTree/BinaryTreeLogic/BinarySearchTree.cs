@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace BinaryTreeLogic
@@ -7,8 +8,20 @@ namespace BinaryTreeLogic
    /// Class Collection Binary tree
    /// </summary>
    /// <typeparam name="T"></typeparam>
-   public sealed class BinarySearchTree<T>
+   public sealed class BinarySearchTree<T>: IEnumerable<T>
    {
+      class Node<TValue>
+      {
+         public TValue Item { get; set; }
+         public Node<TValue> Left { get; set; }
+         public Node<TValue> Right { get; set; }
+
+         public Node(TValue item)
+         {
+            Item = item;
+         }
+      }
+
       private Node<T> root;
 
       /// <summary>
@@ -18,7 +31,14 @@ namespace BinaryTreeLogic
 
       public BinarySearchTree(IEnumerable<T> items, Comparison<T> comparer )
       {
+         if (ReferenceEquals(comparer, null))
+            if (typeof(T) is IComparable) this.comparer = (lhs, rhs) => ((dynamic)lhs).CompareTo(rhs);
+            else new ArgumentNullException();
+
          this.comparer = comparer;
+
+         if (ReferenceEquals(items, null)) throw new ArgumentNullException();
+
          foreach (var item in items)
          {
             if (root == null)
@@ -30,6 +50,10 @@ namespace BinaryTreeLogic
                Add(item);
             }            
          }   
+      }
+
+      public BinarySearchTree(IEnumerable<T> items, IComparer<T> comparator):this(items, comparator.Compare)
+      {
       }
 
       /// <summary>
@@ -143,12 +167,24 @@ namespace BinaryTreeLogic
       public T TreeSearch( T item)
       {
          Node<T> node = root;
-         while (node != null && comparer(item, node.Item) != 0)
+         while (node != null || comparer(item, node.Item) != 0)
          {
             if (comparer(item, node.Item) > 0) node = node.Right;
             if (comparer(item, node.Item) <= 0) node = node.Left;
          }
-         return node.Item;
+         if (comparer(item, node.Item)==0) return node.Item;
+         return default(T);
+      }
+
+      /// <summary>
+      /// Returns true if binary tree contins item, and false if not
+      /// </summary>
+      /// <param name="item"></param>
+      /// <returns></returns>
+      public bool Contains(T item)
+      {
+         if (comparer(item, TreeSearch(item)) == 0) return true;
+         return false;
       }
 
 
@@ -181,17 +217,15 @@ namespace BinaryTreeLogic
             list.Add(node.Item);
          }
       }
-   }
 
-   public class Node<T>
-   {
-      public T Item { get; set; }
-      public Node<T> Left { get; set; }
-      public Node<T> Right { get; set; }
-
-      public Node(T item)
+      public IEnumerator<T> GetEnumerator()
       {
-         Item = item;
+         return InorderTreeWalk().GetEnumerator();
       }
-   }
+
+      IEnumerator IEnumerable.GetEnumerator()
+      {
+         return GetEnumerator();
+      }
+   }   
 }
