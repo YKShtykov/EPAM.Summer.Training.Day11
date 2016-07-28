@@ -62,10 +62,7 @@ namespace BinaryTreeLogic
       /// <returns> collection of items</returns>
       public IEnumerable<T> InorderTreeWalk()
       {
-         List<T> result = new List<T>();
-         InorderTreeWalk(root, result);
-
-         return result;
+         return InorderTreeWalk(root);
       }
 
       /// <summary>
@@ -74,10 +71,7 @@ namespace BinaryTreeLogic
       /// <returns> collection of items</returns>
       public IEnumerable<T> PreorderTreeWalk()
       {
-         List<T> result = new List<T>();
-         PreorderTreeWalk(root, result);
-
-         return result;
+         return PreorderTreeWalk(root);
       }
 
       /// <summary>
@@ -86,10 +80,7 @@ namespace BinaryTreeLogic
       /// <returns> collection of items</returns>
       public IEnumerable<T> PostorderTreeWalk()
       {
-         List<T> result = new List<T>();
-         PostorderTreeWalk(root, result);
-
-         return result;
+         return PostorderTreeWalk(root);
       }
 
 
@@ -166,14 +157,12 @@ namespace BinaryTreeLogic
       /// <returns></returns>
       public T TreeSearch( T item)
       {
-         Node<T> node = root;
-         while (node != null || comparer(item, node.Item) != 0)
+         foreach (T Item in this)
          {
-            if (comparer(item, node.Item) > 0) node = node.Right;
-            if (comparer(item, node.Item) <= 0) node = node.Left;
+            if (comparer(item, Item) == 0) return item;
          }
-         if (comparer(item, node.Item)==0) return node.Item;
-         return default(T);
+
+         return default(T);        
       }
 
       /// <summary>
@@ -188,34 +177,40 @@ namespace BinaryTreeLogic
       }
 
 
-      private void InorderTreeWalk(Node<T> node, List<T> list)
+      private IEnumerable<T> InorderTreeWalk(Node<T> node)
       {
-         if (node != null)
-         {
-            InorderTreeWalk(node.Left, list);
-            list.Add(node.Item);
-            InorderTreeWalk(node.Right, list);
-         }
+         if (node == null) yield break;
+         foreach (var n in InorderTreeWalk(node.Left))
+            yield return n;
+
+         yield return node.Item;
+
+         foreach (var n in InorderTreeWalk(node.Right))
+            yield return n;
       }
 
-      private void PreorderTreeWalk(Node<T> node, List<T> list)
+      private IEnumerable<T> PreorderTreeWalk(Node<T> node)
       {
-         if (node != null)
-         {
-            list.Add(node.Item);
-            InorderTreeWalk(node.Left, list);
-            InorderTreeWalk(node.Right, list);
-         }
+         if (node == null) yield break;
+         yield return node.Item;
+
+         foreach (var n in PreorderTreeWalk(node.Left))
+            yield return n;
+
+         foreach (var n in PreorderTreeWalk(node.Right))
+            yield return n;
       }
 
-      private void PostorderTreeWalk(Node<T> node, List<T> list)
+      private IEnumerable<T> PostorderTreeWalk(Node<T> node)
       {
-         if (node != null)
-         {
-            InorderTreeWalk(node.Left, list);
-            InorderTreeWalk(node.Right, list);
-            list.Add(node.Item);
-         }
+         if (node == null) yield break;
+         foreach (var n in PreorderTreeWalk(node.Left))
+            yield return n;
+
+         foreach (var n in PreorderTreeWalk(node.Right))
+            yield return n;
+
+         yield return node.Item;
       }
 
       public IEnumerator<T> GetEnumerator()

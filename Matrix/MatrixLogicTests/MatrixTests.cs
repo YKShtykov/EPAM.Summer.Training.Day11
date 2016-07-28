@@ -16,11 +16,10 @@ namespace MatrixLogicTests
          int[,] rhs = { { 4, 3 }, { 2, 0 } };
          SquareMatrix<int> matrix = new SquareMatrix<int>(lhs);
          SquareMatrix<int> secondMatrix = new SquareMatrix<int>(rhs);
-         SquareMatrix<int>.Adder = (a, b) => a + b;
-         //matrix.Changed +=new EventHandler(DebugMessage);
+         MatrixAdder<int> adder = new MatrixAdder<int>();
 
          //Act
-         var result = matrix + secondMatrix;
+         var result = adder.DoOperation(matrix, secondMatrix);
 
          //Assert
          for (int i = 0; i < 2; i++)
@@ -33,9 +32,22 @@ namespace MatrixLogicTests
 
       }
 
-      public static void DebugMessage(object sender, ElementEventArgs eventArgs)
+      [TestMethod]
+      public void StringSquareMatrixTest()
       {
-         Debug.WriteLine("{0},{1} -> {2}", eventArgs.I, eventArgs.J);
+         //Arrange
+         string[,] lhs = { { "", "" }, { "Hello", "" } };
+         string[,] rhs = { { "", "" }, { " World!", "" } };
+         SquareMatrix<string> matrix = new SquareMatrix<string>(lhs);
+         SquareMatrix<string> secondMatrix = new SquareMatrix<string>(rhs);
+         MatrixAdder<string> adder = new MatrixAdder<string>();
+
+         //Act
+         var result = adder.DoOperation(matrix, secondMatrix);
+
+         //Assert
+         Assert.AreEqual("Hello World!", result[1, 0]);
+
       }
    }
 }
